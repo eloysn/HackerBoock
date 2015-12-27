@@ -51,38 +51,59 @@ class Utils {
         let fileURL = getCacheURL().URLByAppendingPathComponent(filename)
         return fileURL.path!
     }
-
-    func downloadImagesSave (urlImage: NSURL, index: Int, callBack: () -> Void ){
-         let sesion = NSURLSession.sharedSession()
-         let task = sesion.dataTaskWithURL(urlImage) { (data, response, error ) -> Void in
-            
-            
-             data!.writeToFile(Utils().fileInDocumentsCache("imagen\(index)"), atomically: true)
-            callBack()
-                        
-            
-        }
-        task.resume()
-        
-    }
-    func downloadPdfSave (urlPdf: NSURL, index: Int,  callBack: (NSData) -> Void ){
+    //Descarga de archivos
+    
+    static func imageDownloading (url:NSURL) {
         
         let sesion = NSURLSession.sharedSession()
-        let task = sesion.dataTaskWithURL(urlPdf) { (data , response, error ) -> Void in
+        if let localUrlImage = url.lastPathComponent{
+            let task = sesion.dataTaskWithURL(url) { (data, response, error ) -> Void in
+                
+                
+                data!.writeToFile(Utils().fileInDocumentsCache(localUrlImage), atomically: true)
+                
+            }
+            task.resume()
             
-            
-            data!.writeToFile(Utils().fileInDocumentsCache("pdf\(index)"), atomically: true)
-            callBack(data!)
         }
-        
-        task.resume()
-        
         
         
         
     }
+    static func pdfDowloading (url: NSURL, callBack: (data: NSData)->Void) {
+        
+        let sesion = NSURLSession.sharedSession()
+        if let localUrlPdf = url.lastPathComponent{
+            let task = sesion.dataTaskWithURL(url) { (data, response, error ) -> Void in
+                
+                
+                data!.writeToFile(Utils().fileInDocumentsCache(localUrlPdf), atomically: true)
+                callBack(data: data!)
+            }
+            task.resume()
+            
+        }
+        
+    }
     
     
+    //func eliminar duplicados
+    func removeDuplicates(array: [String]) -> [String] {
+        var encountered = Set<String>()
+        var result: [String] = []
+        for value in array {
+            if encountered.contains(value) {
+                // Do not add a duplicate element.
+            }
+            else {
+                // Add value to the set.
+                encountered.insert(value)
+                // ... Append the value.
+                result.append(value)
+            }
+        }
+        return result
+    }
     
     
     

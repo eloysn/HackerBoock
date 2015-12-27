@@ -9,7 +9,7 @@
 import UIKit
 
 
-class Boock {
+class Boock : CustomDebugStringConvertible {
     
     
     let title : String
@@ -19,6 +19,11 @@ class Boock {
     let ima_url :NSURL
     var isFavorite : Bool
     
+    
+    var debugDescription: String {
+    
+        return "\(self.dynamicType) \(title)"
+    }
     
     init (title: String, authors: [String], tags: [String], pdf: NSURL, ima_url: NSURL,isFavorite: Bool){
         

@@ -11,5 +11,5 @@ import Foundation
 
 protocol DelegateProtocol
 {
-    func update(boock: Boock, indexPath: Int)
+    func update(boock: Boock)
 }

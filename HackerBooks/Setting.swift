@@ -12,4 +12,7 @@ enum Settting :String {
     
     case datajson = "data.json"
     case dowloadImages = "dowloadImages"
+    case lastSection = "lastSection"
+    case lastRow = "lastRow"
+    
 }

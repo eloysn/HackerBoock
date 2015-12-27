@@ -26,29 +26,30 @@ class WebViewPdfController: UIViewController {
         
         activity.startAnimating()
         let checkValidation = NSFileManager.defaultManager()
-        let url = Utils().UrlCache("pdf\(index)")
-        let data = NSData(contentsOfURL: url)
+        if let urlPdf = boock?.pdf  {
         
-        if (checkValidation.fileExistsAtPath(Utils().fileInDocumentsCache("pdf\(index)")))
+        
+      if (checkValidation.fileExistsAtPath(Utils().fileInDocumentsCache(urlPdf.lastPathComponent!)))
         {
             //FILE AVAILABLE
-            
-            pdfWebView.loadData(data!, MIMEType: "application/pdf", textEncodingName: "utf-8", baseURL: (boock?.pdf)!)
+            let localUrlPdf = Utils().UrlCache(urlPdf.lastPathComponent!)
+            let data = NSData(contentsOfURL: localUrlPdf)
+            pdfWebView.loadData(data!, MIMEType: "application/pdf", textEncodingName: "utf-8", baseURL: urlPdf)
             self.activity.stopAnimating()
         }
         else
         {
             //FILE NOT AVAILABLE
-            Utils().downloadPdfSave((boock?.pdf)!, index: index,  callBack: { (dat) -> Void in
-                
-                
-                self.pdfWebView.loadData(dat, MIMEType: "application/pdf", textEncodingName: "utf-8", baseURL: (self.boock?.pdf)!)
-                self.activity.stopAnimating()
-            })
+           
+          Utils.pdfDowloading(urlPdf, callBack: { (data) -> Void in
+            self.pdfWebView.loadData(data, MIMEType: "application/pdf", textEncodingName: "utf-8", baseURL: urlPdf)
+            self.activity.stopAnimating()
+          })
+           
             
         }
         
-        
+        }
         
         
         

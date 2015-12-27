@@ -16,6 +16,7 @@ class DecodeJason {
     
     func decodeBook (data: [[String:AnyObject]]) throws -> [Boock] {
         
+        let checkValidation = NSFileManager.defaultManager()
         let userDefault = NSUserDefaults.standardUserDefaults()
         var count = 0
         var boock = [Boock]()
@@ -35,36 +36,52 @@ class DecodeJason {
            
             let authors = author.componentsSeparatedByString(",")
             
+            
             guard let tag = dict["tags"] as? String  else {
                 
                 throw errors.errorForResource
             }
-            let tags = tag.componentsSeparatedByString(",")
+            //Procesamos los Tag en un array sin espacos en blanco y primera en mayusculas
+            var tags = [String]()
+            let tagsArr = tag.componentsSeparatedByString(",")
+            for tag in tagsArr {
+                let newTag = tag.capitalizedString.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+                tags.append(newTag)
+            }
             
-            guard let stringpdf = dict["pdf_url"] as? String ,pdf = NSURL(string: stringpdf) else {
+            
+            guard let strPdf = dict["pdf_url"] as? String, pdfUrl = NSURL(string: strPdf) else {
                 
                 throw errors.errorForResource
             }
-            guard let url = dict["image_url"] as? String, ima_url = NSURL(string: url) else {
-                
-                 throw errors.errorForResource
+            
+            
+            
+            
+            guard let strIma = dict["image_url"] as? String, imaUrl = NSURL(string: strIma), lastCompUrlIma = imaUrl.lastPathComponent else {
+                                     throw errors.errorForResource
+            }
+            //Coprobamos si tenemos las imagenes
+            if (!checkValidation.fileExistsAtPath(Utils().fileInDocumentsCache(lastCompUrlIma))){
+                print("no esta le imagen")
+                Utils.imageDownloading(imaUrl)
             }
             
             
             var isFavorite : Bool = false
             
-            if userDefault.objectForKey("boockIsFavorite\(count)") as? Bool == true {
-                
-                 isFavorite = true
-            }else{
-                
-                 isFavorite = false
-            }
+//            if userDefault.objectForKey("boockIsFavorite\(count)") as? Bool == true {
+//                
+//                 isFavorite = true
+//            }else{
+//                
+//                 isFavorite = false
+//            }
             
             
 
             
-            let newBook = Boock(title: title, authors: authors, tags: tags, pdf: pdf, ima_url: ima_url, isFavorite: isFavorite )
+            let newBook = Boock(title: title, authors: authors, tags: tags, pdf: pdfUrl, ima_url: imaUrl, isFavorite: isFavorite )
             
             boock.append(newBook)
             count += 1

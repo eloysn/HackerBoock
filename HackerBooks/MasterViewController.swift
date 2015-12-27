@@ -11,22 +11,23 @@ import Foundation
 
 class MasterViewController: UITableViewController , DelegateProtocol{
 
-    @IBOutlet weak var labelAuthor: UILabel!
-    @IBOutlet weak var imaBoock: UIImageView!
+    
+    
     let userDefault = NSUserDefaults.standardUserDefaults()
     var detailViewController: DetailViewController? = nil
-    //var objects = [AnyObject]()
-    var arrBoock = [Boock]()
+    var library = Library()
+    
+    var isfavorite = 0
     
     
     
     
     //MARK: -Protocols
     
-    func update(boock: Boock, indexPath: Int) {
+    func update(boock: Boock) {
         
-        arrBoock[indexPath] = boock
-        self.tableView.reloadData() 
+      
+    self.tableView.reloadData() 
         
     }
     
@@ -37,31 +38,30 @@ class MasterViewController: UITableViewController , DelegateProtocol{
         
         super.viewDidLoad()
         self.title = "HackerBoocks"
-        
-        
-        do{
-            arrBoock =  try Library().modelData()
-        }catch{
-            print("Esto puede salir mal")
-            fatalError()
-
-        }
-        
-        let lastBoock = userDefault.objectForKey("lastBoockSelet") as? Int
+        //iniciamos la Library
+        library = Library.init()
         
         
         if let split = self.splitViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
             
-            if (lastBoock != nil) {
-                self.detailViewController?.boock = arrBoock[lastBoock!]
-                self.detailViewController?.IndexPath = lastBoock!
-            }else{
-                self.detailViewController?.boock = arrBoock[0]
-                self.detailViewController?.IndexPath = 0
-            }
         }
+        if let lastSection = userDefault.stringForKey(Settting.lastSection.rawValue){
+            
+            let lastRow = userDefault.integerForKey(Settting.lastRow.rawValue)
+            
+            
+            let lastBook = library.tagBook[lastSection]
+            self.detailViewController?.boock = lastBook?[lastRow]
+            
+            
+        }else{
+            
+            self.detailViewController?.boock = library.model[0]
+            
+        }
+        
         
        
         
@@ -88,62 +88,70 @@ class MasterViewController: UITableViewController , DelegateProtocol{
         if segue.identifier == "showDetail" {
             
             if let indexPath = self.tableView.indexPathForSelectedRow {
-                //let object = objects[indexPath.row] as! NSDate
+                let section = library.tags[indexPath.section]
+                let book = library.tagBook[section]
+                
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                userDefault.setInteger(indexPath.row, forKey: "lastBoockSelet")
+                
                 controller.delegate = self
-                controller.detailItem = arrBoock[indexPath.row]
-                controller.boock = arrBoock[indexPath.row]
-                controller.IndexPath = indexPath.row
+                controller.boock = book?[indexPath.row]
+
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
     }
 
-    // MARK: - Table View
-
+     //MARK: - Table View
+    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        
+        
+        return library.tags[section]
+        
+    }
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+        
+        return library.tags.count
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        //return objects.count
         
-        return arrBoock.count
+        let tagInSection = library.tags[section]
+        
+        
+        return (library.tagBook[tagInSection]?.count)!
         
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
         
-        let checkValidation = NSFileManager.defaultManager()
-        let url = Utils().UrlCache("imagen\(indexPath.row)")
+        let tagInSection = library.tags[indexPath.section]
+        let book = library.tagBook[tagInSection]
+        let nameIma = book?[indexPath.row].ima_url.lastPathComponent
+
         
-        if (checkValidation.fileExistsAtPath(Utils().fileInDocumentsCache("imagen\(indexPath.row)")))
+       let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+       let checkValidation = NSFileManager.defaultManager()
+       
+       
+        
+        if (checkValidation.fileExistsAtPath(Utils().fileInDocumentsCache(nameIma!)))
         {
             //FILE AVAILABLE
-        
-            cell.imageView?.image = UIImage(data: NSData(contentsOfURL: url)!)
+             let urlIma = Utils().UrlCache(nameIma!)
+            if let dataIma = NSData(contentsOfURL: urlIma){
+                cell.imageView?.image = UIImage(data: dataIma)
+            }
         }
         else
         {
             //FILE NOT AVAILABLE
-           Utils().downloadImagesSave(arrBoock[indexPath.row].ima_url, index: indexPath.row, callBack: { () -> Void in
-            
-             cell.setNeedsDisplay()
-            
-            
-           })
-            cell.imageView?.image = UIImage(named: "ebook.png")
+             cell.imageView?.image = UIImage(named: "ebook.png")
         }
+
+          cell.textLabel!.text = book?[indexPath.row].title
+          cell.detailTextLabel!.text  = book?[indexPath.row].authors.joinWithSeparator(",")
         
-        cell.textLabel!.text = arrBoock[indexPath.row].title
-        cell.detailTextLabel!.text  = arrBoock[indexPath.row].authors.joinWithSeparator(",")
-        if arrBoock[indexPath.row].isFavorite == true {
-        cell.accessoryType = UITableViewCellAccessoryType.Checkmark
-        }else{
-        cell.accessoryType = UITableViewCellAccessoryType.None       }
         return cell
     }
 
@@ -152,8 +160,15 @@ class MasterViewController: UITableViewController , DelegateProtocol{
         return false
     }
 
- 
-    
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let section = library.tags[indexPath.section]
+        let row = indexPath.row
+            
+        
+        userDefault.setInteger(row, forKey: Settting.lastRow.rawValue)
+        userDefault.setObject(section, forKey: Settting.lastSection.rawValue)
+
+    }
     
     
 
