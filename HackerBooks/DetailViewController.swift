@@ -34,12 +34,12 @@ class DetailViewController: UIViewController {
         
         if !swictchFavorito.on {
             
-            
+            userDefault.setBool(false, forKey: "bookIsFavorite\(boock!.title)")
             boock?.isFavorite = false
             delegate?.update(boock!)
             
         }else{
-            
+            userDefault.setBool(true, forKey: "bookIsFavorite\(boock!.title)")
             boock?.isFavorite = true
             delegate?.update(boock!)
         }

@@ -14,6 +14,7 @@ class DecodeJason {
     
     
     
+    
     func decodeBook (data: [[String:AnyObject]]) throws -> [Boock] {
         
         let checkValidation = NSFileManager.defaultManager()
@@ -21,7 +22,7 @@ class DecodeJason {
         var count = 0
         var boock = [Boock]()
         
-    
+        
         for dict in data {
             
             guard let title = dict["title"] as? String else {
@@ -50,6 +51,7 @@ class DecodeJason {
             }
             
             
+            
             guard let strPdf = dict["pdf_url"] as? String, pdfUrl = NSURL(string: strPdf) else {
                 
                 throw errors.errorForResource
@@ -70,16 +72,16 @@ class DecodeJason {
             
             var isFavorite : Bool = false
             
-//            if userDefault.objectForKey("boockIsFavorite\(count)") as? Bool == true {
-//                
-//                 isFavorite = true
-//            }else{
-//                
-//                 isFavorite = false
-//            }
+            if userDefault.objectForKey("bookIsFavorite\(title)") as? Bool == true {
+                
+                 isFavorite = true
+            }else{
+                    
+                 isFavorite = false
+                
+            }
             
             
-
             
             let newBook = Boock(title: title, authors: authors, tags: tags, pdf: pdfUrl, ima_url: imaUrl, isFavorite: isFavorite )
             

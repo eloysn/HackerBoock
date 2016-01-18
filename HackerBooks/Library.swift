@@ -10,7 +10,7 @@ import UIKit
 
 
 
-class Library {
+class Library  {
     
     
     var tags :[String] = []
@@ -60,16 +60,18 @@ class Library {
     
     func arrayTags ( forLibrary library: [Boock]) -> [String]{
         
-        var result : [String] = []
+        var result : [String] = [" Favoritos"]
         
         for tag in library {
             
             let tagString = tag.tags
             result.appendContentsOf(tagString)
         }
+        
         let tags = Utils().removeDuplicates(result).sort()
         
         
+        print(tags.count)
         return tags
         
         
@@ -77,7 +79,8 @@ class Library {
      func boockForTags ( boocks: [Boock])-> [String:[Boock]] {
         
         
-        var TagsBooks = [String:[Boock]] ()
+        var TagsBooks : [String:[Boock]] = [" Favoritos":[]]
+        
         
         for book in boocks{
             for tag in book.tags{
@@ -94,13 +97,16 @@ class Library {
                 
             }
         }
-    
-
+        
+        
+        print(TagsBooks.count)
         return TagsBooks
         
         
         
     }
+    
+    
     
     
     

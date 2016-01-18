@@ -14,9 +14,9 @@ class Boock : CustomDebugStringConvertible {
     
     let title : String
     let authors : [String]
-    let tags : [String]
-    let pdf :NSURL
-    let ima_url :NSURL
+    let tags : [String] 
+    let pdf : NSURL
+    let ima_url : NSURL
     var isFavorite : Bool
     
     

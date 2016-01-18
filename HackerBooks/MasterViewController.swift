@@ -25,9 +25,10 @@ class MasterViewController: UITableViewController , DelegateProtocol{
     //MARK: -Protocols
     
     func update(boock: Boock) {
-        
-      
-    self.tableView.reloadData() 
+       //Tenemos que actualizar toda la library
+     
+        checkIsBookFavorites(library.model)
+        self.tableView.reloadData()
         
     }
     
@@ -40,7 +41,7 @@ class MasterViewController: UITableViewController , DelegateProtocol{
         self.title = "HackerBoocks"
         //iniciamos la Library
         library = Library.init()
-        
+        checkIsBookFavorites(library.model)
         
         if let split = self.splitViewController {
             let controllers = split.viewControllers
@@ -52,9 +53,11 @@ class MasterViewController: UITableViewController , DelegateProtocol{
             let lastRow = userDefault.integerForKey(Settting.lastRow.rawValue)
             
             
-            let lastBook = library.tagBook[lastSection]
-            self.detailViewController?.boock = lastBook?[lastRow]
+            if let lastBook = library.tagBook[lastSection]{
+             self.detailViewController?.boock = lastBook[lastRow]
+           
             
+            }
             
         }else{
             
@@ -78,6 +81,47 @@ class MasterViewController: UITableViewController , DelegateProtocol{
         // Dispose of any resources that can be recreated.
     }
     
+    func checkIsBookFavorites (books:[Boock])  {
+        
+        var resultBoock = [Boock] ()
+        for book in books {
+            
+            if book.isFavorite {
+                resultBoock.append(book)
+                
+            }
+        }
+        if resultBoock.count > 0 {
+            
+            if !library.tags.contains(" Favoritos"){
+                library.tags.append(" Favoritos")
+                library.tags.sortInPlace()
+                library.tagBook[" Favoritos"] = resultBoock
+                
+                
+            }else {
+                library.tagBook[" Favoritos"] = resultBoock
+                
+            }
+            
+            
+        }else{
+            if library.tags.contains(" Favoritos"){
+                
+                library.tagBook.removeValueForKey(" Favoritos")
+                library.tags.removeFirst()
+                userDefault.setInteger(0, forKey: Settting.lastRow.rawValue)
+                userDefault.setObject("Access Controls", forKey: Settting.lastSection.rawValue)
+                
+            }
+            
+            
+        }
+            
+        
+           
+        
+    }
     
 
 
@@ -111,7 +155,7 @@ class MasterViewController: UITableViewController , DelegateProtocol{
     }
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         
-        return library.tags.count
+        return library.tags.count 
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -164,9 +208,11 @@ class MasterViewController: UITableViewController , DelegateProtocol{
         let section = library.tags[indexPath.section]
         let row = indexPath.row
             
+       // print(library.model.filter({$0.tags.contains("Algorithms")}).count)
         
         userDefault.setInteger(row, forKey: Settting.lastRow.rawValue)
         userDefault.setObject(section, forKey: Settting.lastSection.rawValue)
+        
 
     }
     
